@@ -52,7 +52,7 @@ def getWeightSquares(cell, color):
         for j in range(8):
             if cell_lines[i][j] == color:
                 total += h_weight[i][j]
-            elif cell_lines[i][j] != '-':
+            elif cell_lines[i][j] != 'E':
                 total -= h_weight[i][j]
     return total
 

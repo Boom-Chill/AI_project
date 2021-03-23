@@ -70,9 +70,9 @@ def positionScore(game, color):
     c_score = 0
     for (r, c) in itertools.product(list('12345678'), list('abcdefgh')):
         if game.getValue(c + r) == color:
-            b_score += 1
+            b_score += 10
         if game.getValue(c + r) == c_color:
-            c_score += 1
+            c_score += 10
     t_score = b_score + c_score
     return t_score, b_score, c_score
 
@@ -90,13 +90,13 @@ def findScore(position, game, color):
     score = 0
 
     positionScoreBoard = [[30, -20, 20, 5, 5, 20, -20, 30],
-                     [-20, -40, -5, -5, -5, -5, -40, -20],
-                     [20, -5, 15, 3, 3, 15, -5, 20],
-                     [5, -5, 3, 3, 3, 3, -5, 5],
-                     [5, -5, 3, 3, 3, 3, -5, 5],
-                     [20, -5, 15, 3, 3, 15, -5, 20],
-                     [-20, -40, -5, -5, -5, -5, -40, -20],
-                     [30, -20, 20, 5, 5, 20, -20, 30]]
+                          [-20, -40, -5, -5, -5, -5, -40, -20],
+                          [20, -5, 15, 3, 3, 15, -5, 20],
+                          [5, -5, 3, 3, 3, 3, -5, 5],
+                          [5, -5, 3, 3, 3, 3, -5, 5],
+                          [20, -5, 15, 3, 3, 15, -5, 20],
+                          [-20, -40, -5, -5, -5, -5, -40, -20],
+                          [30, -20, 20, 5, 5, 20, -20, 30]]
 
     cell_lines = game.getCellLineList()
     for i in range(8):
@@ -104,7 +104,7 @@ def findScore(position, game, color):
         for j in range(8):
             if cell_lines[i][j] == color:
                 score += positionScoreBoard[i][j]
-            elif cell_lines[i][j] != '-':
+            elif cell_lines[i][j] != 'E':
                 score -= positionScoreBoard[i][j]
     return score
 
@@ -121,11 +121,11 @@ def minimax(curState, depth, alpha, beta, isMax):
 
     if (result != 'CONTINUE'):
         if (result == bot):
-            return 1000
+            return 9999
         elif result == 'DRAW':
             return 0
         else:
-            return -1000
+            return -9999
 
     score = 0
     if (depth == 0):
@@ -134,40 +134,40 @@ def minimax(curState, depth, alpha, beta, isMax):
             t_p, b_p, c_p = positionScore(game, color)
             score = findScoreCalculator(game, color)
             if (b_p > c_p):
-                score += 10
+                score += 100
                 if (t_p < 20):
                     if (b_nstep > c_nstep):
-                        score += 15
+                        score += 150
                         return score
                     else:
-                        score += 0
+                        score += 100
                         return score
                 else:
                     if (b_nstep > c_nstep):
-                        score += 30
+                        score += 300
                         return score
                     else:
-                        score += 0
+                        score += 100
                         return score
             else:
-                score -= 10
-                if (t_p < 20):
+                score -= 100
+                if (t_p < 200):
                     if (b_nstep > c_nstep):
-                        score -= 0
+                        score -= 100
                         return score
                     else:
-                        score -= 15
+                        score -= 150
                         return score
                 else:
                     if (b_nstep > c_nstep):
-                        score -= 0
+                        score -= 200
                         return score
                     else:
-                        score -= 30
+                        score -= 300
                         return score
 
     if isMax:
-        best = -999
+        best = -9999
         listPosiblePositions = posiblePositions(game, color)
         for step in listPosiblePositions:
             newGame = Board()
@@ -175,13 +175,14 @@ def minimax(curState, depth, alpha, beta, isMax):
             newGame.place(step, color)
             newState = newGame.getCellLineList()
 
-            best = max(best, minimax(newState, depth - 1, False))
-            if (beta => alpha):
+            best = max(best, minimax(newState, depth - 1, alpha, beta, False))
+            alpha = max(alpha, best)
+            if (beta <= alpha):
                 break
         # print('max:', best)
         return best
     else:
-        best = 999
+        best = 9999
         listPosiblePositions = posiblePositions(game, c_color)
         for step in listPosiblePositions:
             newGame = Board()
@@ -189,7 +190,8 @@ def minimax(curState, depth, alpha, beta, isMax):
             newGame.place(step, c_color)
             newState = newGame.getCellLineList()
 
-            best = min(best, minimax(newState, depth - 1, True))
+            best = min(best, minimax(newState, depth - 1, alpha, beta, True))
+            beta = min(beta, best)
             if (beta <= alpha):
                 break
         # print('min:', best)
@@ -204,7 +206,7 @@ def findBestMove(state, depth):
     game = Board()
     game.update(state)
 
-    bestMoveVal = -1000
+    bestMoveVal = -9999
 
     listPosiblePositions = posiblePositions(game, color)
     bestStep = listPosiblePositions[0]

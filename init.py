@@ -5,7 +5,7 @@ import numpy as np
 
 class Board:
     def __init__(self):
-        self.data = np.array([['-'] * 8] * 8)
+        self.data = np.array([['E'] * 8] * 8)
         self.data[3, 3] = self.data[4, 4] = 'W'
         self.data[3, 4] = self.data[4, 3] = 'B'
 
@@ -46,7 +46,7 @@ class Board:
     # color: {'B', 'W'}
     # return: {True, False}
     def isDirectionPlaceable(self, position, direction, color):
-        if self.getValue(position) != '-':
+        if self.getValue(position) != 'E':
             return False
 
         alphabet_character, numeric_character = tuple(position)
@@ -57,7 +57,7 @@ class Board:
         for i in range(1, 9):
             r = row_id + i * row_direction
             c = column_id + i * column_direction
-            if self.isOutOfRange(r, c) or (self.data[r, c] == '-'):
+            if self.isOutOfRange(r, c) or (self.data[r, c] == 'E'):
                 return False
             if self.data[r, c] == color:
                 if i == 1:
@@ -99,7 +99,7 @@ class Board:
     # color: {'B', 'W'}
     # return: list of cells which will change color
     def getDirectionFlips(self, position, direction, color):
-        if self.getValue(position) != '-':
+        if self.getValue(position) != 'E':
             return []
 
         ret = []
@@ -111,7 +111,8 @@ class Board:
         for i in range(1, 9):
             r = row_id + i * row_direction
             c = column_id + i * column_direction
-            if (r < 0) or (r > 7) or (c < 0) or (c > 7) or (self.data[r, c] == '-'):
+            if (r < 0) or (r > 7) or (c < 0) or (c > 7) or (self.data[r, c]
+                                                            == 'E'):
                 return []
             if self.data[r, c] == color:
                 return ret
@@ -169,7 +170,9 @@ class Game:
         random_numbers = np.random.choice(64, 5, replace=False)
 
         self.victory_cells = [
-            chr(x // 8 + ord('a')) + chr(x % 8 + ord('1')) for x in random_numbers]
+            chr(x // 8 + ord('a')) + chr(x % 8 + ord('1'))
+            for x in random_numbers
+        ]
         self.board = Board()
         self.history = []
         self.winner = None

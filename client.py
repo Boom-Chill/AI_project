@@ -1,29 +1,26 @@
 import socket
 import re
 from os import system
-import socket
 import whatBot
-
+# Create a socket (SOCK_STREAM means a TCP socket)
 HOST = ''
 PORT = 14003
-while(True):
-    choice = input(
-        "\n-----HOST-----\n1. my HOST\n2. teacher HOST\n3. another HOST\n> ")
-    if(choice == '1'):
+while (True):
+    choice = input("1.your HOST\n2.teacher HOST\n3.another HOST\n> ")
+    if (choice == '1'):
         HOST = socket.gethostbyname(socket.gethostname())
         break
-    if(choice == '2'):
+    if (choice == '2'):
         HOST = "209.97.169.233"
         break
-    if(choice == '3'):
-        HOST = input("Enter host: ")
+    if (choice == '3'):
+        HOST = input("enter host: ")
         break
-
-match = int(input("\nEnter match: "))
-
-win = 0
-lose = 0
-
+match = int(input("enter match: "))
+white_win = 0
+white_lose = 0
+black_win = 0
+black_lose = 0
 for i in range(match):
     color = None
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -33,22 +30,30 @@ for i in range(match):
             ret = str(sock.recv(1024), "ASCII")
             if re.match("^victory_cell", ret) is None:
                 if ret.split("\n")[-2] == color:
-                    win += 1
+                    if color == "BLACK":
+                        black_win += 1
+                    else:
+                        white_win += 1
                 else:
-                    lose += 1
+                    if color == "BLACK":
+                        black_lose += 1
+                    else:
+                        white_lose += 1
                 sock.close()
                 break
             else:
                 if color is None:
                     color = ret.split('\n')[-2]
                 # system("cls")
-                print(f"Match Number: {i + 1}")
-                # ret is board
+                print("Match Number: " + str(i))
                 print(ret)
                 sock.sendall(bytes(whatBot.callBot(ret), "ASCII"))
 
-total = match
-print(f"Total matches: {total}")
-print(f"wins: {win}")
-print(f"loses: {lose}")
-print(f"Winrate: {((win)*100/total)} %")
+total = white_win + white_lose + black_lose + black_win
+print("Total matches: " + str(total))
+print("White wins: " + str(white_win))
+print("White Loses: " + str(white_lose))
+print('')
+print("Black wins: " + str(black_win))
+print("Black loses: " + str(black_lose))
+print("\nWinrate: " + str((black_win + white_win) * 100 / total) + "%")
