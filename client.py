@@ -6,7 +6,8 @@ import whatBot
 HOST = ''
 PORT = 14003
 while (True):
-    choice = input("1.your HOST\n2.teacher HOST\n3.another HOST\n> ")
+    choice = input(
+        "\n-----HOST-----\n1.your HOST\n2.teacher HOST\n3.another HOST\n> ")
     if (choice == '1'):
         HOST = socket.gethostbyname(socket.gethostname())
         break
@@ -16,7 +17,8 @@ while (True):
     if (choice == '3'):
         HOST = input("enter host: ")
         break
-match = int(input("enter match: "))
+
+match = int(input("\nenter match: "))
 white_win = 0
 white_lose = 0
 black_win = 0
@@ -56,4 +58,8 @@ print("White Loses: " + str(white_lose))
 print('')
 print("Black wins: " + str(black_win))
 print("Black loses: " + str(black_lose))
+print('')
+print(f"Total wins: {white_win + black_win}")
+print(f"Total loses: {white_lose + black_lose}")
+
 print("\nWinrate: " + str((black_win + white_win) * 100 / total) + "%")
