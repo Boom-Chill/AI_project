@@ -30,15 +30,61 @@ def numberOfStep(game, color):
     return b_step, c_step
 
 
+def cornerOccupied(game, color):
+    c_color = str
+    if (color == 'B'):
+        c_color = 'W'
+    else:
+        c_color = 'B'
+    b_corner = []
+    c_corner = []
+    cornerBoard = ['a1', 'a8', 'h1', 'h8']
+    for (r, c) in itertools.product(list('12345678'), list('abcdefgh')):
+        if game.getValue(c + r) == color:
+            if (c + r) in cornerBoard and (c + r) not in b_corner:
+                b_corner.append(c + r)
+        if game.getValue(c + r) == c_color:
+            if (c + r) in cornerBoard and (c + r) not in c_corner:
+                c_corner.append(c + r)
+    return b_corner, c_corner
+
+
+def viectoryCellScore(game, color):
+    global victory_cells
+    score = 0
+    v_cell = 0
+
+    b_corner, c_corner = cornerOccupied(game, color)
+
+    for step in victory_cells:
+        v_cell += 1 if game.getValue(step) == color else 0
+
+    if len(b_corner) < 2:
+        if v_cell <= 4:
+            score += 10 * v_cell
+        else:
+            score += 20 * v_cell
+
+    if len(b_corner) >= 2:
+        if v_cell <= 4:
+            score += 10 * v_cell
+        else:
+            score += 30 * v_cell
+
+    if len(c_corner) > 0:
+        score += -50 * len(c_corner)
+    return score
+
+
 def evaluated(game):
     global bot
     global color
     global victory_cells
 
     v_b = v_w = 0
-    for c in victory_cells:
-        v_b += 1 if game.getValue(c) == 'W' else 0
-        v_w += 1 if game.getValue(c) == 'B' else 0
+    for step in victory_cells:
+        v_b += 1 if game.getValue(step) == 'W' else 0
+        v_w += 1 if game.getValue(step) == 'B' else 0
     if v_b == 5:
         return "BLACK"
     if v_w == 5:
@@ -70,9 +116,9 @@ def positionScore(game, color):
     c_score = 0
     for (r, c) in itertools.product(list('12345678'), list('abcdefgh')):
         if game.getValue(c + r) == color:
-            b_score += 10
+            b_score += 1
         if game.getValue(c + r) == c_color:
-            c_score += 10
+            c_score += 1
     t_score = b_score + c_score
     return t_score, b_score, c_score
 
@@ -89,22 +135,22 @@ def findScore(position, game, color):
     global victory_cells
     score = 0
 
-    positionScoreBoard = [[30, -20, 20, 5, 5, 20, -20, 30],
+    positionScoreBoard = [[120, -20, 30, 5, 5, 30, -20, 120],
                           [-20, -40, -5, -5, -5, -5, -40, -20],
-                          [20, -5, 15, 3, 3, 15, -5, 20],
+                          [30, -5, 30, 3, 3, 30, -5, 30],
                           [5, -5, 3, 3, 3, 3, -5, 5],
                           [5, -5, 3, 3, 3, 3, -5, 5],
-                          [20, -5, 15, 3, 3, 15, -5, 20],
+                          [30, -5, 30, 3, 3, 30, -5, 30],
                           [-20, -40, -5, -5, -5, -5, -40, -20],
-                          [30, -20, 20, 5, 5, 20, -20, 30]]
+                          [120, -20, 30, 5, 5, 30, -20, 120]]
 
     cell_lines = game.getCellLineList()
     for i in range(8):
         cell_lines[i] = cell_lines[i].replace(' ', '')
         for j in range(8):
-            if cell_lines[i][j] == color:
+            if (cell_lines[i][j] == color):
                 score += positionScoreBoard[i][j]
-            elif cell_lines[i][j] != 'E':
+            if (cell_lines[i][j] == 'E'):
                 score -= positionScoreBoard[i][j]
     return score
 
@@ -121,53 +167,52 @@ def minimax(curState, depth, alpha, beta, isMax):
 
     if (result != 'CONTINUE'):
         if (result == bot):
-            return 9999
+            return 999999
         elif result == 'DRAW':
             return 0
         else:
-            return -9999
+            return -999999
 
     score = 0
     if (depth == 0):
-        if isMax:
-            b_nstep, c_nstep = numberOfStep(game, color)
-            t_p, b_p, c_p = positionScore(game, color)
-            score = findScoreCalculator(game, color)
-            if (b_p > c_p):
-                score += 100
-                if (t_p < 20):
-                    if (b_nstep > c_nstep):
-                        score += 150
-                        return score
-                    else:
-                        score += 100
-                        return score
+        b_nstep, c_nstep = numberOfStep(game, color)
+        t_p, b_p, c_p = positionScore(game, color)
+        score = findScoreCalculator(game, color)
+        v_score = viectoryCellScore(game, color)
+        if (b_p > c_p):
+            score += 50
+            if (t_p < 20):
+                if (b_nstep > c_nstep):
+                    score += 150
                 else:
-                    if (b_nstep > c_nstep):
-                        score += 300
-                        return score
-                    else:
-                        score += 100
-                        return score
+                    score += 50
             else:
-                score -= 100
-                if (t_p < 200):
-                    if (b_nstep > c_nstep):
-                        score -= 100
-                        return score
-                    else:
-                        score -= 150
-                        return score
+                if (b_nstep > c_nstep):
+                    score += 200
                 else:
-                    if (b_nstep > c_nstep):
-                        score -= 200
-                        return score
-                    else:
-                        score -= 300
-                        return score
+                    score += 100
+        else:
+            # c_p > t_p
+            score -= 50
+            if (t_p < 20):
+                if (b_nstep > c_nstep):
+                    score -= 50
+                else:
+                    score -= 150
+            else:
+                if (b_nstep > c_nstep):
+                    score -= 100
+                else:
+                    score -= 200
+
+        score += v_score
+        if isMax:
+            return score
+        else:
+            return -score
 
     if isMax:
-        best = -9999
+        best = -999999
         listPosiblePositions = posiblePositions(game, color)
         for step in listPosiblePositions:
             newGame = Board()
@@ -182,7 +227,7 @@ def minimax(curState, depth, alpha, beta, isMax):
         # print('max:', best)
         return best
     else:
-        best = 9999
+        best = 999999
         listPosiblePositions = posiblePositions(game, c_color)
         for step in listPosiblePositions:
             newGame = Board()
@@ -206,7 +251,7 @@ def findBestMove(state, depth):
     game = Board()
     game.update(state)
 
-    bestMoveVal = -9999
+    bestMoveVal = -999999
 
     listPosiblePositions = posiblePositions(game, color)
     bestStep = listPosiblePositions[0]
@@ -220,7 +265,7 @@ def findBestMove(state, depth):
         # get state
         newState = newGame.getCellLineList()
         # get score of move
-        moveVal = minimax(newState, depth, -9999, 9999, True)
+        moveVal = minimax(newState, depth, -999999, 999999, True)
         # update step
         if (moveVal > bestMoveVal):
             bestMoveVal = moveVal
@@ -251,7 +296,6 @@ def callBot(game_info):
     victory_cells = lines[1].split(' ')
     state = lines[3:11]
     step = findBestMove(state, 2)
-
     if step == None:
         return "NULL"
     return step
